@@ -78,7 +78,7 @@ def get_objs(args):
         dataset = PygNodePropPredDataset(name='ogbn-arxiv', transform=T.ToUndirected())
         res['dataset'] = dataset
         data = dataset[0]
-        res['data'] = data
+        res['data'] = data.to(device)
         res['split_idx'] = dataset.get_idx_split()
         res['train_idx'] = res['split_idx']['train']
         res['model'] = HypGAT(data.num_features, dataset.num_classes, args.hidden_channels, [args.num_heads]*args.num_layers, dropout=args.dropout, layer_norm=args.use_layer_norm, residual=args.use_residual).to(device)
