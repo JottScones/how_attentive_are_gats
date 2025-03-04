@@ -26,11 +26,11 @@ function run_arxiv() {
 
 
 run_arxiv "GAT" "1"
-run_arxiv "GAT2" "1"
-run_arxiv "DPGAT" "1"
+# run_arxiv "GAT2" "1"
+# run_arxiv "DPGAT" "1"
 
-run_arxiv "GAT" "8"
-run_arxiv "GAT2" "8"
-run_arxiv "DPGAT" "8"
+# run_arxiv "GAT" "8"
+# run_arxiv "GAT2" "8"
+# run_arxiv "DPGAT" "8"
 
 

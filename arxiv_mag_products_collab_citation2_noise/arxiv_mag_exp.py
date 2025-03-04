@@ -6,6 +6,7 @@ from torch_geometric.data import Data
 import argparse
 from utils.logger import Logger
 from models.GAT import GAT_TYPE
+from models.myGAT import HypGAT
 import torch_geometric.transforms as T
 from tqdm import tqdm
 from utils.edge_noise import add_edge_noise
@@ -19,7 +20,7 @@ def train(model, data, loader, optimizer, device, epoch):
         for data in tqdm(loader, leave=False, desc=f"Epcoh {epoch}", dynamic_ncols=True):
             data = data.to(device)
             optimizer.zero_grad()
-            out = model(data.x, data.edge_index)
+            out = model(data)
             y = data.y.squeeze(1)
             loss = F.cross_entropy(out[data.train_mask], y[data.train_mask])
             loss.backward()
@@ -48,7 +49,7 @@ def train(model, data, loader, optimizer, device, epoch):
 def test(model, data, loader, split_idx, evaluator, metric):
     model.eval()
 
-    out = model.inference(data.x, subgraph_loader=loader)
+    out = model(data)
     y_pred = out.argmax(dim=-1, keepdim=True)
 
     train_acc = evaluator.eval({
@@ -80,9 +81,7 @@ def get_objs(args):
         res['data'] = data
         res['split_idx'] = dataset.get_idx_split()
         res['train_idx'] = res['split_idx']['train']
-        res['model'] = args.type.get_model(data.num_features, args.hidden_channels,
-                                    dataset.num_classes, args.num_layers, args.num_heads,
-                                    args.dropout, device, args.use_saint, args.use_layer_norm, args.use_residual, args.use_resdiual_linear).to(device)
+        res['model'] = HypGAT(data.num_features, dataset.num_classes, args.hidden_channels, [args.num_heads]*args.num_layers, dropout=args.dropout, layer_norm=args.use_layer_norm, residual=args.use_residual).to(device)
         res['evaluator'] = Evaluator(name='ogbn-arxiv')
         res['metric'] = 'acc'
     elif args.dataset == 'ogbn-products':
@@ -181,7 +180,7 @@ def main():
     print(f"learnable_params: {sum(p.numel() for p in list(model.parameters()) if p.requires_grad)}")
     run = 0
     while run < args.runs:
-        model.reset_parameters()
+        model =HypGAT(data.num_features, dataset.num_classes, args.hidden_channels, [args.num_heads]*args.num_layers, dropout=args.dropout, layer_norm=args.use_layer_norm, residual=args.use_residual).to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
         run_success = True
         low_loss = False
