@@ -78,7 +78,7 @@ def get_objs(args):
         dataset = PygNodePropPredDataset(name='ogbn-arxiv', transform=T.ToUndirected())
         res['dataset'] = dataset
         data = dataset[0]
-        res['data'] = data.to(device)
+        res['data'] = data
         res['split_idx'] = dataset.get_idx_split()
         res['train_idx'] = res['split_idx']['train']
         res['model'] = HypGAT(data.num_features, dataset.num_classes, args.hidden_channels, [args.num_heads]*args.num_layers, dropout=args.dropout, layer_norm=args.use_layer_norm, residual=args.use_residual).to(device)
@@ -197,7 +197,7 @@ def main():
                 break
             # if epoch > 50 and epoch % 10 == 0:
             if epoch % args.eval_steps == 0:
-                result = test(model, data, subgraph_loader, split_idx, evaluator, metric)
+                result = test(model, data.to(device), subgraph_loader, split_idx, evaluator, metric)
                 logger.add_result(run, result)
                 train_acc, valid_acc, test_acc = result
                 if args.log_steps:
